@@ -47,7 +47,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    needs: build-and-deploy-image
+    needs: build-and-publish-image
     environment:
       name: preview
       url: https://preview.cinny.codegameeat.com
