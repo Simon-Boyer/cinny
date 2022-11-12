@@ -16,7 +16,7 @@ jobs:
       packages: write
 
     outputs:
-      digest: ${{ steps.buildpush.outputs.digest }}
+      newimage: ${{ steps.img.outputs.newimage }}
 
     steps:
       - name: Checkout repository
@@ -38,17 +38,17 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Build Docker image
-        id: buildpush
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           context: .
-          load: true
-          push: false
-          tags: ${{ steps.meta.outputs.tags }} , ghcr.io/simon-boyer/cinny:${{ github.ref_name }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }} , ghcr.io/simon-boyer/cinny:${{ github.ref_name }} ,  ghcr.io/simon-boyer/cinny:${{GITHUB_SHA}}
 
-      - name: Push image
+      - name: get image digest
+        id: img
         run: |
-          docker push ghcr.io/simon-boyer/cinny:${{ github.ref_name }}
+          export IMG_OUTPUT=$(docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/simon-boyer/cinny:${{GITHUB_SHA}})
+          echo "newimage=$IMG_OUTPUT" >> $GITHUB_OUTPUT
 
   deploy-preview:
     runs-on: ubuntu-latest
@@ -69,7 +69,7 @@ jobs:
         uses: rusowyler/github-action-kustomize-and-push@v1.1.0
         with:
           # The images (space separated) to edit using kustomize, for example: node:8.15.0 mysql=mariadb For more information run: kustomize edit set image -h
-          kustomize-edit-images: "cinny=ghcr.io/simon-boyer/cinny@${{ needs.build-and-publish-image.outputs.digest }}"
+          kustomize-edit-images: "cinny=${{ needs.build-and-publish-image.outputs.newimage }}"
           # Email for the git commit
           user-email: simon.boyer.1@ens.etsmtl.ca
           # [Optional] Name for the git commit. Defaults to the destination username/organization name
