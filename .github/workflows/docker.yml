@@ -51,6 +51,8 @@ jobs:
     environment:
       name: preview
       url: https://preview.cinny.codegameeat.com
+    env:
+      API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
     steps:
       - name: Run kustomize to update images and push result to another repository
         # You may pin to the exact commit or the version.
