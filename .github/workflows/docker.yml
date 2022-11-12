@@ -54,6 +54,7 @@ jobs:
     env:
       API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
     steps:
+      - run: "echo DIGEST: ${{ needs.build-and-publish-image.outputs.digest }}"
       - name: Run kustomize to update images and push result to another repository
         # You may pin to the exact commit or the version.
         # uses: rusowyler/github-action-kustomize-and-push@300d4106cdcacb043e7f04695636ef6d191da012
