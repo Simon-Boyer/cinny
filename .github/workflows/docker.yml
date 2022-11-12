@@ -15,6 +15,9 @@ jobs:
       contents: read
       packages: write
 
+    outputs:
+      digest: ${{ steps.buildpush.outputs.digest }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -35,6 +38,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Build and push Docker image
+        id: buildpush
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           context: .
