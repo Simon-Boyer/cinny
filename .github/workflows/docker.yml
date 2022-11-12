@@ -9,7 +9,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-and-push-image:
+  build-and-publish-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -41,3 +41,65 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }} , ghcr.io/simon-boyer/cinny:${{ github.ref_name }}
           labels: ${{ steps.meta.outputs.labels }}
+
+  deploy-preview:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    needs: build-and-deploy-image
+    environment:
+      name: preview
+      url: https://preview.cinny.codegameeat.com
+    steps:
+      - name: Run kustomize to update images and push result to another repository
+        # You may pin to the exact commit or the version.
+        # uses: rusowyler/github-action-kustomize-and-push@300d4106cdcacb043e7f04695636ef6d191da012
+        uses: rusowyler/github-action-kustomize-and-push@v1.1.0
+        with:
+          # The images (space separated) to edit using kustomize, for example: node:8.15.0 mysql=mariadb For more information run: kustomize edit set image -h
+          kustomize-edit-images: "cinny=ghcr.io/simon-boyer/cinny@${{ needs.build-and-publish-image.outputs.digest }}"
+          # Email for the git commit
+          user-email: simon.boyer.1@ens.etsmtl.ca
+          # [Optional] Name for the git commit. Defaults to the destination username/organization name
+          repository-username: Simon-Boyer
+          # Destination repository In https://github.com/kubernetes-sigs/kustomize is: kustomize
+          repository-name: arctiq-mission-infra
+          # [Optional] set target branch name for the destination repository. Defaults to "main"
+          directory: apps/cinny
+
+  promote:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    needs: deploy-preview
+    environment:
+      name: GKE
+      url: https://cinny.codegameeat.com
+    env:
+      PROJECT_ID: ${{ secrets.GKE_PROJECT }}
+      GKE_CLUSTER: arctiq-mission-cluster    # Add your cluster name here.
+      GKE_ZONE: northamerica-northeast1   # Add your cluster zone here.
+    steps:
+      - uses: google-github-actions/setup-gcloud@94337306dda8180d967a56932ceb4ddcf01edae7
+        with:
+          service_account_key: ${{ secrets.GKE_SA_KEY }}
+          project_id: ${{ secrets.GKE_PROJECT }}
+      # Configure Docker to use the gcloud command-line tool as a credential
+      # helper for authentication
+      - run: |-
+          gcloud --quiet auth configure-docker
+
+      # Get the GKE credentials so we can deploy to the cluster
+      - uses: google-github-actions/get-gke-credentials@fb08709ba27618c31c09e014e1d8364b02e5042e
+        with:
+          cluster_name: ${{ env.GKE_CLUSTER }}
+          location: ${{ env.GKE_ZONE }}
+          credentials: ${{ secrets.GKE_SA_KEY }}
+      - name: Install argo rollouts cli
+        run: |
+          curl -LO https://github.com/argoproj/argo-rollouts/releases/latest/download/kubectl-argo-rollouts-linux-amd64
+          chmod +x kubectl-argo-rollouts-linux-amd64
+      - name: Promote Rollout
+        run: ./kubectl-argo-rollouts-linux-amd64 promote cinny-deployment
