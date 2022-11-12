@@ -58,7 +58,7 @@ jobs:
     needs: build-and-publish-image
     environment:
       name: preview
-      url: https://preview.cinny.codegameeat.com
+      url: https://preview.cinny.arctiq.codegameeat.com
     env:
       API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
     steps:
@@ -87,7 +87,7 @@ jobs:
     needs: deploy-preview
     environment:
       name: GKE
-      url: https://cinny.codegameeat.com
+      url: https://cinny.arctiq.codegameeat.com
     env:
       PROJECT_ID: ${{ secrets.GKE_PROJECT }}
       GKE_CLUSTER: arctiq-mission-cluster    # Add your cluster name here.
@@ -113,4 +113,4 @@ jobs:
           curl -LO https://github.com/argoproj/argo-rollouts/releases/latest/download/kubectl-argo-rollouts-linux-amd64
           chmod +x kubectl-argo-rollouts-linux-amd64
       - name: Promote Rollout
-        run: ./kubectl-argo-rollouts-linux-amd64 promote cinny-deployment
+        run: ./kubectl-argo-rollouts-linux-amd64 promote cinny-deployment -n cinny
