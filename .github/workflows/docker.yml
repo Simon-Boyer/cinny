@@ -45,7 +45,6 @@ jobs:
           load: true
           push: false
           tags: ${{ steps.meta.outputs.tags }} , ghcr.io/simon-boyer/cinny:${{ github.ref_name }}
-          labels: ${{ steps.meta.outputs.labels }}
 
       - name: Push image
         run: |
