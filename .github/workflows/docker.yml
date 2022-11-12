@@ -42,12 +42,12 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }} , ghcr.io/simon-boyer/cinny:${{ github.ref_name }} ,  ghcr.io/simon-boyer/cinny:${{GITHUB_SHA}}
+          tags: ${{ steps.meta.outputs.tags }} , ghcr.io/simon-boyer/cinny:${{ github.ref_name }} ,  ghcr.io/simon-boyer/cinny:${{github.sha}}
 
       - name: get image digest
         id: img
         run: |
-          export IMG_OUTPUT=$(docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/simon-boyer/cinny:${{GITHUB_SHA}})
+          export IMG_OUTPUT=$(docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/simon-boyer/cinny:${{github.sha}})
           echo "newimage=$IMG_OUTPUT" >> $GITHUB_OUTPUT
 
   deploy-preview:
