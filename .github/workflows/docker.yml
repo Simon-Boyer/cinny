@@ -58,7 +58,7 @@ jobs:
     needs: build-and-publish-image
     environment:
       name: preview
-      url: https://preview.cinny.arctiq.codegameeat.com
+      url: https://preview.cinny.mission.arctiq.codegameeat.com
     env:
       API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
     steps:
@@ -87,7 +87,7 @@ jobs:
     needs: deploy-preview
     environment:
       name: GKE
-      url: https://cinny.arctiq.codegameeat.com
+      url: https://cinny.mission.arctiq.codegameeat.com
     env:
       PROJECT_ID: ${{ secrets.GKE_PROJECT }}
       GKE_CLUSTER: arctiq-mission-cluster    # Add your cluster name here.
