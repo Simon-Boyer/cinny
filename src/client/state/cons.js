@@ -9,7 +9,7 @@ const cons = {
   DEVICE_DISPLAY_NAME: 'Cinny Web',
   IN_CINNY_SPACES: 'in.cinny.spaces',
   tabs: {
-    HOME: 'home',
+    HOME: 'hometest',
     DIRECTS: 'dm',
   },
   supportEventTypes: ['m.room.create', 'm.room.message', 'm.room.encrypted', 'm.room.member', 'm.sticker'],
